@@ -1,0 +1,20 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Resources:
+  GetFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.get
+      Runtime: nodejs4.3
+      CodeUri: s3://hdc-lambda/hipchat.zip
+      Policies:
+          - AmazonEC2ReadOnlyAccess
+      Environment:
+        Variables:
+          HIPCHAT_ROOM_ID: 123456
+      Events:
+        GetResource:
+          Type: Api
+          Properties:
+            Path: /resource/{resourceId}
+            Method: get
