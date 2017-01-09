@@ -4,7 +4,7 @@ Resources:
   GetFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: index.get
+      Handler: hipchat.handler
       Runtime: nodejs4.3
       CodeUri: s3://hdc-lambda/hipchat.zip
       Policies:
