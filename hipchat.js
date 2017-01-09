@@ -160,7 +160,8 @@ function getHipchatPromise(msg, format, color) {
         },
         function (error, response, body) {
             console.log("HIPCHATPromise : %j", response);
-            if (!error && response.statusCode == 200) {
+            if (!error && response.statusCode >= 200 && response.statusCode < 300) {
+                console.log("HIPCHATPromise: OK OK OK");
                 console.log(body);
                 //context.done(null, result); // SUCCESS with message
                 resolve();
