@@ -23,6 +23,9 @@ create-cf:
 	aws cloudformation create-stack \
 	  --stack-name $(STACK_NAME) \
 	  --template-body file://empty.template
+	aws cloudformation wait \
+		stack-create-complete \
+		--stack-name $(STACK_NAME)
 
 create-change:
 	@aws cloudformation create-change-set \
@@ -35,6 +38,10 @@ create-change:
 	      ParameterKey=HipchatRoomId,ParameterValue=$(HIPCHAT_ROOM_ID),UsePreviousValue=false \
 		  ParameterKey=HipchatToken,ParameterValue=$(HIPCHAT_TOKEN),UsePreviousValue=false \
 	  --template-body file://$(LAMBDA_NAME).template
+	aws cloudformation wait \
+		change-set-create-complete \
+		 --stack-name $(STACK_NAME) \
+		 --change-set-name initial
 
 execute-change:
 	aws cloudformation execute-change-set \
