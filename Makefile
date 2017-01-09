@@ -25,12 +25,15 @@ create-cf:
 	  --template-body file://empty.template
 
 create-change:
-	aws cloudformation create-change-set \
+	@aws cloudformation create-change-set \
 	  --capabilities CAPABILITY_IAM \
 	  --stack-name "${STACK_NAME}" \
 	  --change-set-name "initial" \
 	  --tags \
 	     Key=Owner,Value=${USER} \
+	  --parameters \
+	      ParameterKey=HipchatRoomId,ParameterValue=$(HIPCHAT_ROOM_ID),UsePreviousValue=false \
+		  ParameterKey=HipchatToken,ParameterValue=$(HIPCHAT_TOKEN),UsePreviousValue=false \
 	  --template-body file://$(LAMBDA_NAME).template
 
 execute-change:

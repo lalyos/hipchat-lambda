@@ -1,5 +1,13 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
+Parameters:
+  HipchatRoomId:
+    Description: Hipchat RoomId
+    Type: String
+  HipchatToken:
+    Description: Hipchat token to authorize messaging
+    Type: String
+
 Resources:
   GetFunction:
     Type: AWS::Serverless::Function
@@ -11,7 +19,8 @@ Resources:
           - AmazonEC2ReadOnlyAccess
       Environment:
         Variables:
-          HIPCHAT_ROOM_ID: 123456
+          HIPCHAT_ROOM_ID: !Ref HipchatRoomId
+          HIPCHAT_TOKEN: !Ref HipchatToken
       Events:
         GetResource:
           Type: Api
