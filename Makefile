@@ -49,4 +49,11 @@ execute-change:
 	  --change-set-name "initial"
 
 clean-log-streams:
-	aws logs describe-log-streams --log-group-name "API-Gateway-Execution-Logs_i1enpt53z0/Stage" --query logStreams[].logStreamName --out text | xargs -t -n 1 -P 5 aws logs delete-log-stream --log-group-name API-Gateway-Execution-Logs_i1enpt53z0/Stage --log-stream-name
+	aws logs describe-log-streams --log-group-name "$(shell aws logs describe-log-groups --query 'logGroups[? ends_with(logGroupName, `/Prod`) ].logGroupName' --out text)" --query logStreams[].logStreamName --out text \
+		| xargs --no-run-if-empty -t -n 1 -P 5 aws logs delete-log-stream --log-group-name $(shell aws logs describe-log-groups --query 'logGroups[? ends_with(logGroupName, `/Prod`) ].logGroupName' --out text) --log-stream-name
+	aws logs describe-log-streams --log-group-name "$(shell aws logs describe-log-groups --query 'logGroups[? ends_with(logGroupName, `/Stage`) ].logGroupName' --out text)" --query logStreams[].logStreamName --out text \
+		| xargs --no-run-if-empty -t -n 1 -P 5 aws logs delete-log-stream --log-group-name $(shell aws logs describe-log-groups --query 'logGroups[? ends_with(logGroupName, `/Stage`) ].logGroupName' --out text) --log-stream-name
+	aws logs describe-log-streams --log-group-name "$(shell aws logs describe-log-groups --query 'logGroups[? starts_with(logGroupName, `/aws/lambda/hipchat-sam`) ].logGroupName' --out text)" --query logStreams[].logStreamName --out text \
+		| xargs --no-run-if-empty -t -n 1 -P 5 aws logs delete-log-stream --log-group-name $(shell aws logs describe-log-groups --query 'logGroups[? starts_with(logGroupName, `/aws/lambda/hipchat-sam`) ].logGroupName' --out text) --log-stream-name
+	
+	
