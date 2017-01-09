@@ -2,6 +2,22 @@
 var aws  = require('aws-sdk');
 var request = require('request');
 
+
+
+function getTag(tags, key) {
+
+    for (var i=0; i < tags.length; i++) {
+        var next = tags[i];
+        //console.log("[DEBUG] next:%j", next.Key)
+        if (next.Key == key) {
+            return next.Value;
+        }
+    }
+    return null;
+
+}
+
+
 function ec2Instances(reg) {
 
     var ec2 = new aws.EC2({region: reg});
@@ -36,6 +52,100 @@ function ec2Instances(reg) {
     )
 }
 
+function getDate(d) {
+    var yyyy = d.getFullYear().toString();
+    var mm = (d.getMonth()+1).toString(); // getMonth() is zero-based
+    var dd  = d.getDate().toString();
+    return yyyy + "-" + (mm[1]?mm:"0"+mm[0]) + "-" + (dd[1]?dd:"0"+dd[0]);
+}
+
+function processInstances (instances) {
+    //console.log("[PROCESS] instances: %s", instances.length);
+
+    instances.forEach(function (ins){
+        //var ins=res.Instances[i];
+
+        var stackName = getTag(ins.Tags, 'aws:cloudformation:stack-name');
+        //console.log("InstanceId: %s, stack:%s", ins.InstanceId, stackName);
+        var role = getTag(ins.Tags, 'instanceGroup');
+        if (stackName != null) {
+            //console.log("stackInstance found: %j", ins);
+            var stack = allInstances.stacks[stackName];
+            if (stack != null) {
+                allInstances.stacks[stackName].count++;
+            } else {
+                allInstances.stacks[stackName] = {
+                    zone: ins.Placement.AvailabilityZone,
+                    started: getDate(ins.LaunchTime),
+                    count: 1
+                };
+                //console.log("allInstances : %j ", allInstances)
+            }
+
+            if ( role == "cbgateway") {
+                 allInstances.stacks[stackName]["ambari"] = "http://" + ins.PublicIpAddress + ":8080";
+                 console.log("ambari found: %j", allInstances.stacks[stackName]);
+            }
+
+        } else {
+            //console.log("naked instance found: %j", ins);
+            //console.log(" ins.LaunchTime: %s", getDate(ins.LaunchTime));
+
+            allInstances.naked[ins.InstanceId] = {
+                zone: ins.Placement.AvailabilityZone,
+                id: ins.InstanceId,
+                name: getTag(ins.Tags,'Name'),
+                owner: getTag(ins.Tags,'Owner'),
+                started: getDate(ins.LaunchTime),
+                publicip: ins.PublicIpAddress
+            };
+        }
+    });
+}
+
+function getInstancesHtml() {
+    console.log("[PRINTINSTANCES]");
+    var ret = "";
+    //console.log("[PRINT] allInstances.stacks %j", allInstances);
+    ret += '<b>Stacks</b> <table border="1">';
+    ret += "<tr><th>Zone</th> <th>Started</th> <th>StackName</th> <th># of Instances</th> <th>Ambari</th> </tr>"
+    for (var next in  allInstances.stacks) {
+        //console.log("[STACK-%s] %d instances in: %s", allInstances.stacks[next].region, allInstances.stacks[next].count, next);
+        var stack = allInstances.stacks[next];
+        ret += "<tr><td>" + stack.zone + "</td> <td>" + stack.started + "</td> <td>" + next + "</td> <td>" + stack.count + "</td> <td>" + stack.ambari +"</td></tr>"
+    }
+    ret += "</table> <b>Instances</b> <table>"
+    ret += "<tr><th>Zone</th> <th>Started</th> <th>InstanceId</th> <th>Name</th> <th>Owner</th> <th>PublicIp</th></tr>"
+    for (var next in  allInstances.naked) {
+        var ins = allInstances.naked[next];
+        //console.log("[INSTANCE-%s] %s: %s", allInstances.naked[next].region, next, allInstances.naked[next].name);
+        ret += "<tr><td>" + ins.zone + "</td> <td>" + ins.started + "</td> <td>" + ins.id + "</td> <td>" + ins.name + "</td> <td>" + ins.owner + "</td> <td>" + ins.publicip + "</td></tr>"
+    }
+    ret += "</table>";
+    return ret;
+
+}
+
+function getRegions() {
+    var ec2 = new aws.EC2({region: 'eu-central-1'});
+
+    var promise = ec2.describeRegions({}).promise()
+
+    return promise.then(
+        function(data){
+            //console.log("regions: %j", data);
+            return data.Regions;
+        },
+        function(err) {
+            console.log(err);
+        }
+    );
+}
+
+
+
+
+
 function getHipchatPromise(msg, format, color) {
   return new Promise(function (resolve,reject){
 
@@ -69,6 +179,26 @@ function getHipchatPromise(msg, format, color) {
 
 function getRegions() {
     var ec2 = new aws.EC2({region: 'eu-central-1'});
+function getAllInstances() {
+    return getRegions().then(
+        function(data) {
+            data = [{"RegionName":"eu-west-1"},{"RegionName":"eu-central-1"},{"RegionName":"us-east-1"},{"RegionName":"us-west-1"},{"RegionName":"us-west-2"}];
+            var pp = [];
+            console.log("[DONE] regions: %j length:%s", data, data.length);
+            data=[{RegionName: "eu-central-1"}];
+            for (var i=0; i < data.length; i++) {
+                console.log("reg: %j", data[i]);
+                var p = ec2Instances(data[i].RegionName);
+                pp.push(p);
+            }
+            return Promise.all(pp);
+        },
+        function(err) {
+            console.log(err);
+        }
+    ).catch(function(err){
+            console.log("CATCH-getAllInstances", err);
+    });
 
     var promise = ec2.describeRegions({}).promise()
 
@@ -102,6 +232,11 @@ function main(event,context) {
        });
    };
 
+}
+
+var allInstances = {
+    stacks: {},
+    naked: {}
 }
 
 var roomId;
