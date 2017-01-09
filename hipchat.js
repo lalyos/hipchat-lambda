@@ -83,32 +83,6 @@ function getRegions() {
     );
 }
 
-function hipchatMsg(msg, format, color) {
-
-    console.log("hipchatMsg ...")
-    request.post(
-        {
-          uri: 'https://sequenceiq.hipchat.com/v2/room/' + roomId + '/notification?auth_token=' + hipchatToken,
-          body: {"color": color,"message":msg ,"notify":false,"message_format":format},
-          json: true
-        },
-        function (error, response, body) {
-            console.log("HIPCHAT ...")
-            if (!error && response.statusCode == 200) {
-                console.log(body);
-                //context.done(null, result); // SUCCESS with message
-
-            }
-            if (error) {
-                 console.log("[ERROR] POSTing message to hipchat failed: %s", error);
-            }
-            console.log("HIPCHAT response: %j", response)
-        }
-    );
-    console.log("request posted")
-
-}
-
 function main(event,context) {
     //console.log("ENV: %j", process.env);
 
