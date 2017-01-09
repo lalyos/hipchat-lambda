@@ -22,9 +22,8 @@ function ec2Instances(reg) {
 
     var ec2 = new aws.EC2({region: reg});
 
-    //console.log("listing ec2 instances in: %s", reg);
+    console.log("listing ec2 instances in: %s", reg);
         var params = {
-
             Filters: [
                 {
                   Name: 'instance-state-name',
@@ -33,7 +32,7 @@ function ec2Instances(reg) {
             ]
         }
     var promise = ec2.describeInstances(params).promise();
-    //console.log("prom.then: %s", typeof promise.then)
+    //console.log("prom.then: %s", typeof promise.then);
     return promise.then(
         function(data){
           var instances = [];
@@ -43,13 +42,15 @@ function ec2Instances(reg) {
                 instances.push(ins);
               });
           });
-          //console.log("EC2 promise: %j", instances.length);
+          console.log("EC2 promise: %j", instances.length);
           return instances;
         },
         function(err) {
             console.log(err);
         }
-    )
+    ).catch(function(err) {
+        console.log("CATCH-ec2Instances",err)
+    });
 }
 
 function getDate(d) {
@@ -178,8 +179,6 @@ function getHipchatPromise(msg, format, color) {
   });
 }
 
-function getRegions() {
-    var ec2 = new aws.EC2({region: 'eu-central-1'});
 function getAllInstances() {
     return getRegions().then(
         function(data) {
@@ -201,17 +200,29 @@ function getAllInstances() {
             console.log("CATCH-getAllInstances", err);
     });
 
-    var promise = ec2.describeRegions({}).promise()
+}
 
-    return promise.then(
-        function(data){
-            //console.log("regions: %j", data);
-            return data.Regions;
+function getAllInstancesAsHtml() {
+    console.log("getAllInstancesAsHtml()")
+    return getAllInstances().then(
+        function(data) {
+            data.forEach(function(instances){
+                processInstances(instances);
+            });
+            var html = getInstancesHtml();
+            console.log("%s", html);
+
+            //getHipchatPromise(html,"html","green")
+            //hipchatInfo(html)
+            return html;
         },
         function(err) {
-            console.log(err);
+             console.log(err);
         }
-    );
+    ).catch(function(err){
+            console.log("CATCH-getAllInstancesAsHtml", err);
+    });
+
 }
 
 function main(event,context) {
@@ -220,16 +231,17 @@ function main(event,context) {
    if (process.env.LAMBDA_RUNTIME_DIR) {
        console.log("nothing todo in main")
    } else{
-        getHipchatPromise("MAIN promise", "text", "yellow").then(
+        //getHipchatPromise("MAIN promise", "text", "yellow").then(
+        getAllInstancesAsHtml().then(
               function(data){
-                  console.log("MAIN-RESOLVE");
+                  console.log("MAIN-RESOLVE data: %j", data);
 
               },
               function(err){
-                  console.log("MAIN-REJECT");
+                  console.log("MAIN-REJECT", err);
 
        }).catch(function(err){
-            console.log("MAIN-CATCH", err)
+            console.log("MAIN-CATCH", err);
        });
    };
 
@@ -248,25 +260,33 @@ exports.handler = function(event, context) {
   console.log("ENV: %j", process.env);
   console.log("CONTEXT: %j",context);
 
- //roomId = event["stage-variables"].roomId;
-  //hipchatToken = event["stage-variables"].hipchatToken;
+/*
+  var body = JSON.parse(event.body);
+  var name = body.item.message.from.name;
+  var msg = body.item.message.message;
+  var room = body.item.room.id;
 
-  //main(event,context);
-  getHipchatPromise("Lambda API", "text", "yellow").then(
+  console.log("[BOT-COMMAND] %s: %s (%s)", name, msg, room);
+*/
+  //getHipchatPromise("Lambda API", "text", "yellow").then(
+  //getRegions().then(
+  //getAllInstances().then(
+  getAllInstancesAsHtml().then(
           function(data){
               console.log("RESOLVE");
 
               var responseBody = {
-                    message: "Hello !",
-                    input: event
+                  message: data ,
+                    color: "green",
+                    notify: false,
+                    message_format: "html"
                 };
-              var responseCode = 200;
               var response = {
-                    statusCode: responseCode,
-                    headers: {
+                    "statusCode": 200,
+                    "headers": {
                         "x-custom-header" : "my custom header value"
                     },
-                    body: JSON.stringify(responseBody)
+                    "body": JSON.stringify(responseBody)
                 };
               console.log("response: " + JSON.stringify(response));
               context.succeed(response);
@@ -275,7 +295,7 @@ exports.handler = function(event, context) {
               console.log("REJECT");
 
    }).catch(function(err){
-        console.log("CATCH", err)
+        console.log("CATCH", err);
    });
 
 
