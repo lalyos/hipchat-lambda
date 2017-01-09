@@ -40,3 +40,6 @@ execute-change:
 	aws cloudformation execute-change-set \
 	  --stack-name "${STACK_NAME}" \
 	  --change-set-name "initial"
+
+clean-log-streams:
+	aws logs describe-log-streams --log-group-name "API-Gateway-Execution-Logs_i1enpt53z0/Stage" --query logStreams[].logStreamName --out text | xargs -t -n 1 -P 5 aws logs delete-log-stream --log-group-name API-Gateway-Execution-Logs_i1enpt53z0/Stage --log-stream-name
