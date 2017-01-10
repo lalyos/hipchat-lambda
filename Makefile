@@ -56,4 +56,10 @@ clean-log-streams:
 	aws logs describe-log-streams --log-group-name "$(shell aws logs describe-log-groups --query 'logGroups[? starts_with(logGroupName, `/aws/lambda/hipchat-sam`) ].logGroupName' --out text)" --query logStreams[].logStreamName --out text \
 		| xargs --no-run-if-empty -t -n 1 -P 5 aws logs delete-log-stream --log-group-name $(shell aws logs describe-log-groups --query 'logGroups[? starts_with(logGroupName, `/aws/lambda/hipchat-sam`) ].logGroupName' --out text) --log-stream-name
 	
-	
+docker-test:
+	@docker run \
+		-e AWS_ACCESS_KEY_ID=$(AWS_ACCESS_KEY_ID) \
+		-e AWS_DEFAULT_REGION=$(AWS_DEFAULT_REGION) \
+		-e AWS_SECRET_ACCESS_KEY=$(AWS_SECRET_ACCESS_KEY) \
+		-v $(PWD):/var/task \
+		lambci/lambda hipchat.handler
