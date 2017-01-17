@@ -4,9 +4,10 @@ STACK_NAME ?= hipchat-sam
 LAMBDA_TIMEOUT ?= 30
 
 node_module:
-	docker run -it -v $PWD:$PWD -w $PWD node:4-alpine npm install \
+	docker run -it -v $(PWD):$(PWD) -w $(PWD) node:4-alpine npm install \
 		aws-sdk \
-		request
+		request \
+		child_process
 	
 build:
 	jar -cMf $(LAMBDA_NAME).zip $(LAMBDA_NAME).js node_modules/
