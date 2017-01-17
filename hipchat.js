@@ -192,9 +192,12 @@ function getAllInstances() {
                {"RegionName":"us-west-2"}
             ];
 
+            if (process.env.MY_AWS_REGION) {
+                data = [{"RegionName": process.env.MY_AWS_REGION}];
+            }
             var pp = [];
             console.log("[DONE] regions: %j length:%s", data, data.length);
-            data=[{RegionName: "eu-central-1"}];
+            //data=[{RegionName: "eu-central-1"}];
             for (var i=0; i < data.length; i++) {
                 console.log("reg: %j", data[i]);
                 var p = ec2Instances(data[i].RegionName);
