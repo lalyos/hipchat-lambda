@@ -266,6 +266,7 @@ var allInstances = {
 
 var roomId;
 var hipchatToken;
+var prefix;
 
 exports.handler = function(event, context) {
   console.log("[TRACE-1] event: %j", event);
@@ -273,6 +274,10 @@ exports.handler = function(event, context) {
   console.log("CONTEXT: %j",context);
 
 /*
+  if (event.requestContext) {
+    prefix = event.requestContext.stage + '-' + event.requestContext.apiId
+  }
+
   var body = JSON.parse(event.body);
   var name = body.item.message.from.name;
   var msg = body.item.message.message;
@@ -287,8 +292,13 @@ exports.handler = function(event, context) {
           function(data){
               console.log("RESOLVE");
 
+              var msgPrefix = "[noprefix] ";
+              if (prefix) {
+                  msgPrefix = "[" + prefix + "]";
+              }
+
               var responseBody = {
-                  message: data ,
+                  message:  prefix + data,
                     color: "green",
                     notify: false,
                     message_format: "html"
