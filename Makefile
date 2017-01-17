@@ -21,20 +21,14 @@ update-lambda: build
 create-bucket:
 	aws s3 mb s3://$(AWS_BUCKET)
 
-create-cf:
-	aws cloudformation create-stack \
-	  --stack-name $(STACK_NAME) \
-	  --template-body file://empty.template
-	aws cloudformation wait \
-		stack-create-complete \
-		--stack-name $(STACK_NAME)
 update-lambda-timeout:
 	aws lambda update-function-configuration \
 		--function-name $(shell aws cloudformation describe-stack-resources --stack-name $(STACK_NAME) --logical-resource-id GetFunction --query 'StackResources[].PhysicalResourceId' --out text) \
 		--timeout $(LAMBDA_TIMEOUT)
 
-create-change:
-	@aws cloudformation create-change-set \
+create-stack:
+	aws cloudformation create-change-set \
+	  --change-set-type CREATE \
 	  --capabilities CAPABILITY_IAM \
 	  --stack-name "${STACK_NAME}" \
 	  --change-set-name "initial" \
@@ -44,15 +38,18 @@ create-change:
 	      ParameterKey=HipchatRoomId,ParameterValue=$(HIPCHAT_ROOM_ID),UsePreviousValue=false \
 		  ParameterKey=HipchatToken,ParameterValue=$(HIPCHAT_TOKEN),UsePreviousValue=false \
 	  --template-body file://$(LAMBDA_NAME).template
+	
 	aws cloudformation wait \
 		change-set-create-complete \
 		 --stack-name $(STACK_NAME) \
 		 --change-set-name initial
-
-execute-change:
+	
 	aws cloudformation execute-change-set \
 	  --stack-name "${STACK_NAME}" \
 	  --change-set-name "initial"
+	aws cloudformation wait \
+		stack-create-complete \
+		 --stack-name $(STACK_NAME)
 
 clean-log-streams:
 	aws logs describe-log-streams --log-group-name "$(shell aws logs describe-log-groups --query 'logGroups[? ends_with(logGroupName, `/Prod`) ].logGroupName' --out text)" --query logStreams[].logStreamName --out text \
