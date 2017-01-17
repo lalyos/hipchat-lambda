@@ -58,7 +58,10 @@ clean-log-streams:
 		| xargs --no-run-if-empty -t -n 1 -P 5 aws logs delete-log-stream --log-group-name $(shell aws logs describe-log-groups --query 'logGroups[? ends_with(logGroupName, `/Stage`) ].logGroupName' --out text) --log-stream-name
 	aws logs describe-log-streams --log-group-name "$(shell aws logs describe-log-groups --query 'logGroups[? starts_with(logGroupName, `/aws/lambda/hipchat-sam`) ].logGroupName' --out text)" --query logStreams[].logStreamName --out text \
 		| xargs --no-run-if-empty -t -n 1 -P 5 aws logs delete-log-stream --log-group-name $(shell aws logs describe-log-groups --query 'logGroups[? starts_with(logGroupName, `/aws/lambda/hipchat-sam`) ].logGroupName' --out text) --log-stream-name
-	
+
+cleal-all-api-log-groups:
+	aws logs describe-log-groups --query 'logGroups[?starts_with(logGroupName,`API`)].logGroupName' --out text|xargs -n 1 -t -P 10 aws logs delete-log-group --log-group-name
+
 docker-test:
 	@docker run \
 		-e AWS_ACCESS_KEY_ID=$(AWS_ACCESS_KEY_ID) \
