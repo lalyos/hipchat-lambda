@@ -68,9 +68,12 @@ make update-lambda-timeout
  
 ### Create a room command
 
+Go back to the Hipchat room integration page, select your own integration:
+
 - Select the **Add a command** checkbox
 - Enter a command like `/ec2`
-- Enter a placeholder url, which will be replaced later
+- Enter the backend url: check by `make get-url`
+
 ## Local test
 
 There is a Docker image **lambci/lambda** which mimics lambda functionality in a container.
