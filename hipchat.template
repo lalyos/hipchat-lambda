@@ -27,3 +27,9 @@ Resources:
           Properties:
             Path: /resource/{resourceId}
             Method: get
+        PutResource:
+          Type: Api
+          Properties:
+            Path: /resource/{resourceId}
+            Method: put
+
