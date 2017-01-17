@@ -1,6 +1,7 @@
 LAMBDA_NAME ?= hipchat
 AWS_BUCKET ?= hdc-lambda
 STACK_NAME ?= hipchat-sam
+LAMBDA_TIMEOUT ?= 30
 
 node_module:
 	docker run -it -v $PWD:$PWD -w $PWD node:4-alpine npm install \
@@ -26,6 +27,10 @@ create-cf:
 	aws cloudformation wait \
 		stack-create-complete \
 		--stack-name $(STACK_NAME)
+update-lambda-timeout:
+	aws lambda update-function-configuration \
+		--function-name $(shell aws cloudformation describe-stack-resources --stack-name $(STACK_NAME) --logical-resource-id GetFunction --query 'StackResources[].PhysicalResourceId' --out text) \
+		--timeout $(LAMBDA_TIMEOUT)
 
 create-change:
 	@aws cloudformation create-change-set \
