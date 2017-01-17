@@ -182,7 +182,16 @@ function getHipchatPromise(msg, format, color) {
 function getAllInstances() {
     return getRegions().then(
         function(data) {
-            data = [{"RegionName":"eu-west-1"},{"RegionName":"eu-central-1"},{"RegionName":"us-east-1"},{"RegionName":"us-west-1"},{"RegionName":"us-west-2"}];
+            data = [
+               {"RegionName":"eu-west-1"},
+               {"RegionName":"eu-west-2"},
+               {"RegionName":"eu-central-1"},
+               {"RegionName":"us-east-1"},
+               {"RegionName":"us-east-2"},
+               {"RegionName":"us-west-1"},
+               {"RegionName":"us-west-2"}
+            ];
+
             var pp = [];
             console.log("[DONE] regions: %j length:%s", data, data.length);
             data=[{RegionName: "eu-central-1"}];
