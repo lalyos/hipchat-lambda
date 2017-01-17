@@ -51,6 +51,9 @@ create-stack:
 		stack-create-complete \
 		 --stack-name $(STACK_NAME)
 
+get-url:
+	@aws cloudformation describe-stacks --stack-name $(STACK_NAME) --query 'Stacks[].Outputs[?OutputKey==`ProdUrl`].OutputValue' --out text
+
 clean-log-streams:
 	aws logs describe-log-streams --log-group-name "$(shell aws logs describe-log-groups --query 'logGroups[? ends_with(logGroupName, `/Prod`) ].logGroupName' --out text)" --query logStreams[].logStreamName --out text \
 		| xargs --no-run-if-empty -t -n 1 -P 5 aws logs delete-log-stream --log-group-name $(shell aws logs describe-log-groups --query 'logGroups[? ends_with(logGroupName, `/Prod`) ].logGroupName' --out text) --log-stream-name
