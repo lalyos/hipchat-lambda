@@ -59,8 +59,13 @@ If you are interested these are the actual api calls:
 - `aws cloudformation wait change-set-create-complete`
 - `aws cloudformation execute-change-set`
 - `aws cloudformation wait stack-create-complete`
-- By default the lambda timeout is to short (3 sec), so make it to 30 sec
 
+
+By default the lambda timeout is to short (3 sec), so make it to 30 sec:
+```
+make update-lambda-timeout
+```
+ 
 ### Create a room command
 
 - Select the **Add a command** checkbox
