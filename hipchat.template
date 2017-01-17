@@ -33,3 +33,12 @@ Resources:
             Path: /resource/{resourceId}
             Method: put
 
+Outputs:
+  ApiId:
+    Description: The id of the RestAPI
+    Value: !Ref ServerlessRestApi
+  ProdUrl:
+    Description: Backend api url for Prod stage
+    Value: !Sub https://${ServerlessRestApi}.execute-api.eu-central-1.amazonaws.com/Prod/resource/123
+
+
