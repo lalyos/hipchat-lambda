@@ -18,6 +18,14 @@ update-lambda: build
 		--zip-file fileb://$(LAMBDA_NAME).zip
 
 
+update-lambda-go:
+	GOOS=linux go build -o main main.go
+	zip -r lambda-go.zip main index.js node_modules/
+	aws s3 cp lambda-go.zip s3://$(AWS_BUCKET)
+	aws lambda update-function-code \
+		--function-name lambda-go \
+		--zip-file fileb://lambda-go.zip
+
 create-bucket:
 	aws s3 mb s3://$(AWS_BUCKET)
 
