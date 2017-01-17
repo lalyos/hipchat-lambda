@@ -278,7 +278,11 @@ exports.handler = function(event, context) {
     prefix = event.requestContext.stage + '-' + event.requestContext.apiId
   }
 
+  if (event.body) {
   var body = JSON.parse(event.body);
+    console.log("[INPUT] %j", body);
+  }
+
   var name = body.item.message.from.name;
   var msg = body.item.message.message;
   var room = body.item.room.id;
