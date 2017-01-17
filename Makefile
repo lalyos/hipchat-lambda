@@ -66,5 +66,6 @@ docker-test:
 		-e AWS_ACCESS_KEY_ID=$(AWS_ACCESS_KEY_ID) \
 		-e AWS_DEFAULT_REGION=$(AWS_DEFAULT_REGION) \
 		-e AWS_SECRET_ACCESS_KEY=$(AWS_SECRET_ACCESS_KEY) \
+		-e MY_AWS_REGION=$(MY_AWS_REGION) \
 		-v $(PWD):/var/task \
 		lambci/lambda hipchat.handler
