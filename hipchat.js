@@ -32,11 +32,12 @@ function ec2Instances(reg) {
             ]
         }
     var promise = ec2.describeInstances(params).promise();
-    //console.log("prom.then: %s", typeof promise.then);
+    console.log("prom.then: %s", typeof promise.then);
     return promise.then(
         function(data){
           var instances = [];
 
+          console.log("INSIDE LOOP: ec2Instances()");
           data.Reservations.forEach(function(res){
               res.Instances.forEach(function(ins){
                 instances.push(ins);
@@ -218,6 +219,7 @@ function getAllInstancesAsHtml() {
     console.log("getAllInstancesAsHtml()")
     return getAllInstances().then(
         function(data) {
+            console.log("INSIDE: getAllInstancesAsHtml()");
             data.forEach(function(instances){
                 processInstances(instances);
             });
@@ -269,26 +271,26 @@ var hipchatToken;
 var prefix;
 
 exports.handler = function(event, context) {
-  console.log("[TRACE-1] event: %j", event);
+  console.log("[TRACE-2] event: %j", event);
   console.log("ENV: %j", process.env);
   console.log("CONTEXT: %j",context);
 
-/*
   if (event.requestContext) {
     prefix = event.requestContext.stage + '-' + event.requestContext.apiId
   }
 
   if (event.body) {
-  var body = JSON.parse(event.body);
+    var body = JSON.parse(event.body);
     console.log("[INPUT] %j", body);
   }
 
+  /*
   var name = body.item.message.from.name;
   var msg = body.item.message.message;
   var room = body.item.room.id;
-
   console.log("[BOT-COMMAND] %s: %s (%s)", name, msg, room);
-*/
+  */
+
   //getHipchatPromise("Lambda API", "text", "yellow").then(
   //getRegions().then(
   //getAllInstances().then(
