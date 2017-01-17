@@ -31,7 +31,7 @@ Resources:
           Type: Api
           Properties:
             Path: /resource/{resourceId}
-            Method: put
+            Method: post
 
 Outputs:
   ApiId:
